@@ -1,0 +1,25 @@
+package com.shubham.secure_banking_system.controller;
+
+import com.shubham.secure_banking_system.dto.request.DepositRequest;
+import com.shubham.secure_banking_system.dto.response.TransactionResponse;
+import com.shubham.secure_banking_system.service.TransactionService;
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/transactions")
+public class TransactionController {
+
+    private final TransactionService transactionService;
+
+    public TransactionController(TransactionService transactionService) {
+        this.transactionService = transactionService;
+    }
+
+    @PostMapping("/deposit")
+    public TransactionResponse deposit(
+            @Valid @RequestBody DepositRequest request) {
+
+        return transactionService.deposit(request);
+    }
+}
