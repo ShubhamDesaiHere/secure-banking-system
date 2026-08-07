@@ -1,6 +1,7 @@
 package com.shubham.secure_banking_system.service.impl;
 
 import com.shubham.secure_banking_system.dto.request.DepositRequest;
+import com.shubham.secure_banking_system.dto.request.WithdrawRequest;
 import com.shubham.secure_banking_system.dto.response.TransactionResponse;
 import com.shubham.secure_banking_system.entity.Account;
 import com.shubham.secure_banking_system.entity.Transaction;
@@ -16,41 +17,72 @@ import java.time.LocalDateTime;
 @Service
 public class TransactionServiceImpl implements TransactionService {
 
-    private final AccountRepository accountRepository;
-    private final TransactionRepository transactionRepository;
+        private final AccountRepository accountRepository;
+        private final TransactionRepository transactionRepository;
 
-    public TransactionServiceImpl(AccountRepository accountRepository,
-                                  TransactionRepository transactionRepository) {
-        this.accountRepository = accountRepository;
-        this.transactionRepository = transactionRepository;
-    }
+        public TransactionServiceImpl(AccountRepository accountRepository,
+                        TransactionRepository transactionRepository) {
+                this.accountRepository = accountRepository;
+                this.transactionRepository = transactionRepository;
 
-    @Override
-    public TransactionResponse deposit(DepositRequest request) {
+        }
 
-        Account account = accountRepository
-                .findByAccountNumber(request.getAccountNumber())
-                .orElseThrow(() -> new RuntimeException("Account not found"));
+        @Override
+        public TransactionResponse deposit(DepositRequest request) {
 
-        BigDecimal newBalance = account.getBalance().add(request.getAmount());
+                Account account = accountRepository
+                                .findByAccountNumber(request.getAccountNumber())
+                                .orElseThrow(() -> new RuntimeException("Account not found"));
 
-        account.setBalance(newBalance);
+                BigDecimal newBalance = account.getBalance().add(request.getAmount());
 
-        accountRepository.save(account);
+                account.setBalance(newBalance);
 
-        Transaction transaction = new Transaction(
-                TransactionType.DEPOSIT,
-                request.getAmount(),
-                LocalDateTime.now(),
-                account
-        );
+                accountRepository.save(account);
 
-        transactionRepository.save(transaction);
+                Transaction transaction = new Transaction(
+                                TransactionType.DEPOSIT,
+                                request.getAmount(),
+                                LocalDateTime.now(),
+                                account);
 
-        return new TransactionResponse(
-                "Amount deposited successfully",
-                account.getAccountNumber(),
-                account.getBalance()
-        );
-    }
+                transactionRepository.save(transaction);
+
+                return new TransactionResponse(
+                                "Amount deposited successfully",
+                                account.getAccountNumber(),
+                                account.getBalance());
+
+        }
+
+        @Override
+        public TransactionResponse withdraw(WithdrawRequest request) {
+
+                Account account = accountRepository
+                                .findByAccountNumber(request.getAccountNumber())
+                                .orElseThrow(() -> new RuntimeException("Account not found"));
+
+                if (account.getBalance().compareTo(request.getAmount()) < 0) {
+                        throw new RuntimeException("Insufficient balance");
+                }
+
+                BigDecimal newBalance = account.getBalance().subtract(request.getAmount());
+
+                account.setBalance(newBalance);
+
+                accountRepository.save(account);
+
+                Transaction transaction = new Transaction(
+                                TransactionType.WITHDRAW,
+                                request.getAmount(),
+                                LocalDateTime.now(),
+                                account);
+
+                transactionRepository.save(transaction);
+
+                return new TransactionResponse(
+                                "Amount withdrawn successfully",
+                                account.getAccountNumber(),
+                                account.getBalance());
+        }
 }
