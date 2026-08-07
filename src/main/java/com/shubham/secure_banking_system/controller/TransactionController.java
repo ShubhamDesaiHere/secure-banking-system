@@ -1,6 +1,7 @@
 package com.shubham.secure_banking_system.controller;
 
 import com.shubham.secure_banking_system.dto.request.DepositRequest;
+import com.shubham.secure_banking_system.dto.request.WithdrawRequest;
 import com.shubham.secure_banking_system.dto.response.TransactionResponse;
 import com.shubham.secure_banking_system.service.TransactionService;
 import jakarta.validation.Valid;
@@ -21,5 +22,12 @@ public class TransactionController {
             @Valid @RequestBody DepositRequest request) {
 
         return transactionService.deposit(request);
+    }
+
+    @PostMapping("/withdraw")
+    public TransactionResponse withdraw(
+            @Valid @RequestBody WithdrawRequest request) {
+
+        return transactionService.withdraw(request);
     }
 }
