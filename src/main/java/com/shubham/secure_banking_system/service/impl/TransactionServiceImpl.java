@@ -14,6 +14,11 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import com.shubham.secure_banking_system.dto.request.TransferRequest;
+import com.shubham.secure_banking_system.exception.InsufficientBalanceException;
+import com.shubham.secure_banking_system.exception.ResourceNotFoundException;
+import org.springframework.transaction.annotation.Transactional;
+
 @Service
 public class TransactionServiceImpl implements TransactionService {
 
@@ -84,5 +89,59 @@ public class TransactionServiceImpl implements TransactionService {
                                 "Amount withdrawn successfully",
                                 account.getAccountNumber(),
                                 account.getBalance());
+        }
+
+        @Override
+        @Transactional
+        public TransactionResponse transfer(TransferRequest request) {
+
+                Account sender = accountRepository
+                                .findByAccountNumber(request.getFromAccount())
+                                .orElseThrow(() -> new ResourceNotFoundException("Sender account not found"));
+
+                Account receiver = accountRepository
+                                .findByAccountNumber(request.getToAccount())
+                                .orElseThrow(() -> new ResourceNotFoundException("Receiver account not found"));
+
+                if (sender.getAccountNumber().equals(receiver.getAccountNumber())) {
+                        throw new RuntimeException("Cannot transfer to the same account");
+                }
+
+                if (sender.getBalance().compareTo(request.getAmount()) < 0) {
+                        throw new InsufficientBalanceException("Insufficient balance");
+                }
+
+                // Deduct money from sender
+                sender.setBalance(
+                                sender.getBalance().subtract(request.getAmount()));
+
+                // Add money to receiver
+                receiver.setBalance(
+                                receiver.getBalance().add(request.getAmount()));
+
+                accountRepository.save(sender);
+                accountRepository.save(receiver);
+
+                // Sender transaction
+                Transaction senderTransaction = new Transaction(
+                                TransactionType.TRANSFER,
+                                request.getAmount(),
+                                LocalDateTime.now(),
+                                sender);
+
+                // Receiver transaction
+                Transaction receiverTransaction = new Transaction(
+                                TransactionType.TRANSFER,
+                                request.getAmount(),
+                                LocalDateTime.now(),
+                                receiver);
+
+                transactionRepository.save(senderTransaction);
+                transactionRepository.save(receiverTransaction);
+
+                return new TransactionResponse(
+                                "Money transferred successfully",
+                                sender.getAccountNumber(),
+                                sender.getBalance());
         }
 }
