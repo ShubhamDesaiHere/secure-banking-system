@@ -18,6 +18,8 @@ import com.shubham.secure_banking_system.dto.request.TransferRequest;
 import com.shubham.secure_banking_system.exception.InsufficientBalanceException;
 import com.shubham.secure_banking_system.exception.ResourceNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
+import com.shubham.secure_banking_system.dto.response.TransactionHistoryResponse;
+import java.util.List;
 
 @Service
 public class TransactionServiceImpl implements TransactionService {
@@ -143,5 +145,19 @@ public class TransactionServiceImpl implements TransactionService {
                                 "Money transferred successfully",
                                 sender.getAccountNumber(),
                                 sender.getBalance());
+        }
+
+        @Override
+        public List<TransactionHistoryResponse> getTransactionHistory(Long accountId) {
+
+                List<Transaction> transactions = transactionRepository.findByAccountId(accountId);
+
+                return transactions.stream()
+                                .map(transaction -> new TransactionHistoryResponse(
+                                                transaction.getId(),
+                                                transaction.getTransactionType(),
+                                                transaction.getAmount(),
+                                                transaction.getTransactionDate()))
+                                .toList();
         }
 }
