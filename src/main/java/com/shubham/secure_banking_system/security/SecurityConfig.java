@@ -23,12 +23,20 @@ public class SecurityConfig {
                 http
                                 .csrf(csrf -> csrf.disable())
 
-                                .sessionManagement(session -> session
-                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                                .sessionManagement(session -> session.sessionCreationPolicy(
+                                                SessionCreationPolicy.STATELESS))
 
                                 .authorizeHttpRequests(auth -> auth
+
+                                                // Public APIs
                                                 .requestMatchers("/api/auth/login").permitAll()
                                                 .requestMatchers("/api/users/register").permitAll()
+
+                                                // Admin APIs
+                                                .requestMatchers("/api/admin/**")
+                                                .hasAuthority("ROLE_ADMIN")
+
+                                                // All other APIs require authentication
                                                 .anyRequest().authenticated())
 
                                 .addFilterBefore(

@@ -23,4 +23,9 @@ public class AccountController {
         return accountService.createAccount(request);
     }
 
+    @GetMapping("/{id}")
+    public AccountResponse getAccountById(@PathVariable Long id) {
+
+        return accountService.getAccountById(id);
+    }
 }

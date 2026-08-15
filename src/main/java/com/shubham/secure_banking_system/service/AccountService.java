@@ -7,4 +7,5 @@ public interface AccountService {
 
     AccountResponse createAccount(AccountRequest request);
 
+    AccountResponse getAccountById(Long id);
 }

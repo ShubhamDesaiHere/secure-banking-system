@@ -18,7 +18,7 @@ public class AccountServiceImpl implements AccountService {
     private final CustomerRepository customerRepository;
 
     public AccountServiceImpl(AccountRepository accountRepository,
-                              CustomerRepository customerRepository) {
+            CustomerRepository customerRepository) {
         this.accountRepository = accountRepository;
         this.customerRepository = customerRepository;
     }
@@ -43,8 +43,7 @@ public class AccountServiceImpl implements AccountService {
                 accountNumber,
                 request.getAccountType(),
                 balance,
-                customer
-        );
+                customer);
 
         Account savedAccount = accountRepository.save(account);
 
@@ -52,8 +51,7 @@ public class AccountServiceImpl implements AccountService {
                 savedAccount.getId(),
                 savedAccount.getAccountNumber(),
                 savedAccount.getAccountType(),
-                savedAccount.getBalance()
-        );
+                savedAccount.getBalance());
     }
 
     private String generateAccountNumber() {
@@ -62,10 +60,23 @@ public class AccountServiceImpl implements AccountService {
 
         do {
             accountNumber = String.valueOf(
-                    1000000000L + (long) (Math.random() * 900000000L)
-            );
+                    1000000000L + (long) (Math.random() * 900000000L));
         } while (accountRepository.existsByAccountNumber(accountNumber));
 
         return accountNumber;
     }
+
+    @Override
+    public AccountResponse getAccountById(Long id) {
+
+        Account account = accountRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Account not found"));
+
+        return new AccountResponse(
+                account.getId(),
+                account.getAccountNumber(),
+                account.getAccountType(),
+                account.getBalance());
+    }
+
 }
