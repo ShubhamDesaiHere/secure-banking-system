@@ -8,4 +8,6 @@ public interface AccountService {
     AccountResponse createAccount(AccountRequest request);
 
     AccountResponse getAccountById(Long id);
+
+    AccountResponse getMyAccount(String username);
 }
